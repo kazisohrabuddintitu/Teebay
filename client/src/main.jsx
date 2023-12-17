@@ -1,49 +1,60 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import App from "./App";
-import "./index.css";
-import Main from "./layout/Main";
-import Home from "./component/Home/Home";
-import Login from "./component/Login/Login";
-import Register from "./component/Register/Register";
-import AuthPorviders from "./providers/AuthPorviders";
-import PrivateRoute from "./component/routes/PrivateRoute";
-import MyProduct from "./component/MyProduct/MyProduct";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import App from './App';
+import './index.css';
+import Main from './layout/Main';
+import Login from './component/Login/Login';
+import Home from './component/Home/Home';
+import Register from './component/Register/Register';
+import MyProduct from './component/MyProduct/MyProduct';
+import { AuthProvider } from './providers/AuthContext';
 
+// Initializing the Apollo Client instance
+const client = new ApolloClient({
+  uri: 'http://localhost:3000/graphql',
+  cache: new InMemoryCache(),
+});
+
+// Defining the router structure
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <Main></Main>,
     children: [
       {
-        path: "/",
-        element: (
-          <PrivateRoute>
-            <Home></Home>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/login",
+        path: '/',
         element: <Login></Login>,
       },
       {
-        path: "/signup",
+        path: '/signup',
         element: <Register></Register>,
       },
       {
-        path: "/myproducts",
+        path: '/myproducts',
         element: <MyProduct></MyProduct>,
+      },
+      {
+        path: '/home',
+        element: <Home></Home>,
       },
     ],
   },
 ]);
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+export default client;
+
+ReactDOM.render(
   <React.StrictMode>
-    <AuthPorviders>
-      <RouterProvider router={router} />
-    </AuthPorviders>
-  </React.StrictMode>
+    <AuthProvider>
+      <ApolloProvider client={client}>
+        <RouterProvider router={router}>
+          <App />
+        </RouterProvider>
+      </ApolloProvider>
+    </AuthProvider>
+  </React.StrictMode>,
+  document.getElementById('root')
 );
+
