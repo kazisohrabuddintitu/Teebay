@@ -10,6 +10,7 @@ import Home from './component/Home/Home';
 import Register from './component/Register/Register';
 import MyProduct from './component/MyProduct/MyProduct';
 import { AuthProvider } from './providers/AuthContext';
+import PrivateRoute from './component/routes/PrivateRoute';
 
 // Initializing the Apollo Client instance
 const client = new ApolloClient({
@@ -33,11 +34,19 @@ const router = createBrowserRouter([
       },
       {
         path: '/myproducts',
-        element: <MyProduct></MyProduct>,
+        element: 
+        <PrivateRoute>
+            <MyProduct></MyProduct>
+        </PrivateRoute>
+        ,
       },
       {
         path: '/home',
-        element: <Home></Home>,
+        element: 
+        <PrivateRoute>
+          <Home></Home>,
+        </PrivateRoute>
+        
       },
     ],
   },
@@ -57,4 +66,3 @@ ReactDOM.render(
   </React.StrictMode>,
   document.getElementById('root')
 );
-
