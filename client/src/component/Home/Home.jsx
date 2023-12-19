@@ -50,7 +50,7 @@ const Home = () => {
   };
 
   return (
-      <div className="mx-auto w-4/5 justify-between items-center">
+      <div className="mx-auto w-3/5 justify-between items-center">
         <h2 className="text-center text-3xl font-bold mt-8">All PRODUCTS</h2>
         {data.allproducts.map((product) => (
           <div

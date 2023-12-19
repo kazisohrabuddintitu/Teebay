@@ -8,16 +8,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   firstName String
+//   lastName  String
+//   address   String
+//   email     String   @unique
+//   phoneNumber String
+//   password  String
+//   created_at DateTime @default(now())
+//   products    Product[]
+// }
+
+// enum RentDurationType {
+//   PER_DAY
+//   PER_WEEK
+//   PER_MONTH
+// }
+
+// model Product {
+//   id                Int               @id @default(autoincrement())
+//   title             String
+//   category          String[]
+//   description       String
+//   purchasePrice     Float
+//   rentPrice         Float
+//   rentDurationType  RentDurationType  // Indicates if rent price is per day, per week or per month
+//   userId           Int               // Foreign key to User table
+//   created_at        DateTime          @default(now())
+
+//   owner             User              @relation(fields: [userId], references: [id])
+// }
+
+
 model User {
-  id        Int      @id @default(autoincrement())
-  firstName String
-  lastName  String
-  address   String
-  email     String   @unique
-  phoneNumber String
-  password  String
-  created_at DateTime @default(now())
-  products    Product[]
+  id               Int       @id @default(autoincrement())
+  firstName        String
+  lastName         String
+  address          String
+  email            String    @unique
+  phoneNumber      String
+  password         String
+  created_at       DateTime  @default(now())
+
+  // Relationships
+  products         Product[] @relation("Owner")
+  productsRented   Product[] @relation("Renter")
+  productsBought   Product[] @relation("Buyer")
+  productsSold     Product[] @relation("Seller")
 }
 
 enum RentDurationType {
@@ -33,9 +71,20 @@ model Product {
   description       String
   purchasePrice     Float
   rentPrice         Float
-  rentDurationType  RentDurationType  // Indicates if rent price is per day, per week or per month
-  userId           Int               // Foreign key to User table
+  rentDurationType  RentDurationType
+  userId           Int               // Foreign key to User table (owner of the product)
+  isAvailableForSale Boolean         @default(true)
+  isAvailableForRent Boolean         @default(true)
+  isSold            Boolean           @default(false)
+  isRented          Boolean           @default(false)
+  rentedBy          User?             @relation("Renter", fields: [rentedById], references: [id])
+  rentedById        Int?              // Foreign key to User table (user renting the product)
+  rentStartDate     DateTime?         // Start date of the rental period
+  rentEndDate       DateTime?         // End date of the rental period
   created_at        DateTime          @default(now())
 
-  owner             User              @relation(fields: [userId], references: [id])
+  // Relationships
+  owner             User              @relation("Owner", fields: [userId], references: [id])
+  boughtBy          User[]            @relation("Buyer")
+  soldBy            User[]            @relation("Seller")
 }

@@ -26,9 +26,20 @@ const typeDefs = gql`
       rentPrice: Float
       rentDurationType: RentDurationType
       userId: Int
+      isAvailableForSale: Boolean
+      isAvailableForRent: Boolean
+      isSold: Boolean
+      isRented: Boolean
+      rentedById: Int
+      rentStartDate: String 
+      rentEndDate: String 
       created_at: String
       owner: User
+      rentedBy: User 
+      boughtBy: [User]
+      soldBy: [User] 
     }
+
     
     type Query {
         users: [User]
@@ -71,6 +82,11 @@ const typeDefs = gql`
         ): Product
 
         deleteProduct(id: Int!): DeletionResponse
+
+        confirmRent(id: Int!, rentStartDate: String!, rentEndDate: String!, rentedById: Int!): Product
+
+        confirmBuy(id: Int!): Product
+
     }
 
     type DeletionResponse {
@@ -108,7 +124,11 @@ const resolvers = {
       //Fetching all products for all user
       allproducts: async (_, __, { prisma }) => {
         try {
-          const products = await prisma.product.findMany({});
+          const products = await prisma.product.findMany({
+            where: {
+              isSold: false,
+            },
+          });
           return products;
         } catch (error) {
           console.error(error);
@@ -116,6 +136,7 @@ const resolvers = {
         }
       },
 
+      //Fetching single product by product id
       product: async (_, { id }, { prisma }) => {
         try {
           const product = await prisma.product.findUnique({
@@ -262,6 +283,66 @@ const resolvers = {
           } catch (error) {
             console.error('Error deleting product:', error);
             return null; // Deletion failed
+          }
+        },
+
+        //Stroing rental data to database
+        confirmRent: async (_, { id, fromDate, toDate, rentedById }, { prisma }) => {
+          try {
+            // Fetch the product by ID
+            const existingProduct = await prisma.product.findUnique({
+              where: { id: id },
+            });
+      
+            if (!existingProduct) {
+              throw new Error('Product not found');
+            }
+      
+            // Update the product with rental details
+            const updatedProduct = await prisma.product.update({
+              where: { id: id },
+              data: {
+                rentStartDate: fromDate,
+                rentEndDate: toDate,
+                isRented: true, // Optionally set isRented flag to true
+                isAvailableForRent: false,
+                rentedById: rentedById,
+
+              },
+            });
+      
+            return updatedProduct;
+          } catch (error) {
+            console.error('Error confirming rent:', error);
+            throw new Error('Failed to confirm rent');
+          }
+        },
+
+        //Updating buy details
+        confirmBuy: async (_, { id }, {prisma}) => {
+          try {
+            // Fetch the product by ID
+            const existingProduct = await prisma.product.findUnique({
+              where: { id: id },
+            });
+      
+            if (!existingProduct) {
+              throw new Error('Product not found');
+            }
+      
+            const updatedProduct = await prisma.product.update({
+              where: { id: id },
+              data: {
+                isAvailableForSale: false,
+                isAvailableForRent: false,
+                isSold: true,
+              },
+            });
+      
+            return updatedProduct;
+          } catch (error) {
+            console.error('Error confirming buy:', error);
+            throw new Error('Failed to confirm buy');
           }
         },
         
