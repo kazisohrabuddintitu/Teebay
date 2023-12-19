@@ -9,6 +9,8 @@ import Login from './component/Login/Login';
 import Home from './component/Home/Home';
 import Register from './component/Register/Register';
 import MyProduct from './component/MyProduct/MyProduct';
+import EditProduct from './component/Product/EditProduct'
+import AddProduct from './component/Product/AddProduct'
 import { AuthProvider } from './providers/AuthContext';
 import PrivateRoute from './component/routes/PrivateRoute';
 
@@ -45,6 +47,22 @@ const router = createBrowserRouter([
         element: 
         <PrivateRoute>
           <Home></Home>,
+        </PrivateRoute>
+        
+      },
+      {
+        path: '/addproduct',
+        element: 
+        <PrivateRoute>
+          <AddProduct></AddProduct>,
+        </PrivateRoute>
+        
+      },
+      {
+        path: '/editproduct/:id',
+        element: 
+        <PrivateRoute>
+          <EditProduct></EditProduct>,
         </PrivateRoute>
         
       },

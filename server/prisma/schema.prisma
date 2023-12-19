@@ -15,6 +15,27 @@ model User {
   address   String
   email     String   @unique
   phoneNumber String
-  password  String?
+  password  String
   created_at DateTime @default(now())
+  products    Product[]
+}
+
+enum RentDurationType {
+  PER_DAY
+  PER_WEEK
+  PER_MONTH
+}
+
+model Product {
+  id                Int               @id @default(autoincrement())
+  title             String
+  category          String[]
+  description       String
+  purchasePrice     Float
+  rentPrice         Float
+  rentDurationType  RentDurationType  // Indicates if rent price is per day, per week or per month
+  userId           Int               // Foreign key to User table
+  created_at        DateTime          @default(now())
+
+  owner             User              @relation(fields: [userId], references: [id])
 }
