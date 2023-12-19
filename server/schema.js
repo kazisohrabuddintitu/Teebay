@@ -33,6 +33,7 @@ const typeDefs = gql`
     type Query {
         users: [User]
         products(userId: Int!): [Product]
+        allproducts: [Product]
         product(id: Int!): Product
     }
 
@@ -69,7 +70,11 @@ const typeDefs = gql`
           userId: Int
         ): Product
 
-        deleteProduct(id: Int!): Product
+        deleteProduct(id: Int!): DeletionResponse
+    }
+
+    type DeletionResponse {
+      id: Int
     }
 
 `;
@@ -87,6 +92,7 @@ const resolvers = {
         }
       },
 
+      //Fetching products for specific user
       products: async (_, { userId }, { prisma }) => {
         try {
           const products = await prisma.product.findMany({
@@ -98,14 +104,24 @@ const resolvers = {
           throw new Error('Failed to fetch products');
         }
       },
+
+      //Fetching all products for all user
+      allproducts: async (_, __, { prisma }) => {
+        try {
+          const products = await prisma.product.findMany({});
+          return products;
+        } catch (error) {
+          console.error(error);
+          throw new Error('Failed to fetch products');
+        }
+      },
+
       product: async (_, { id }, { prisma }) => {
         try {
           const product = await prisma.product.findUnique({
             where: { id }, // Fetching product by its unique ID
           });
-      
-          console.log('Retrieved product:', product);
-          return [product]; // Ensure the product is wrapped in an array or similar iterable
+          return product;
         } catch (error) {
           console.error('Error fetching product:', error);
           throw new Error('Failed to fetch the product');
@@ -114,6 +130,7 @@ const resolvers = {
       
     },  
     Mutation: {
+        //New user creation 
         createUser: async (_, args, { prisma }) => {
           const { firstName, lastName, address, email, phoneNumber, password } = args;
             
@@ -135,6 +152,7 @@ const resolvers = {
           }
         },
 
+        //User log in
         loginUser: async (_, { email, password }, { prisma }) => {
             try {
               const user = await prisma.user.findUnique({ where: { email } });
@@ -155,6 +173,7 @@ const resolvers = {
             }
         },
 
+        //Adding new product
         addProduct: async (_, args, { prisma }) => {
           const {
             title,
@@ -186,7 +205,8 @@ const resolvers = {
             throw new Error('Failed to create product');
           }
         },
-        
+
+        //updating product
         editProduct: async (_, args, { prisma }) => {
           const {
             id,
@@ -230,35 +250,24 @@ const resolvers = {
           }
         },
         
-        deleteProduct: async (_, args, { prisma }) => {
-          const { productId } = args;
-    
+        //deleting product from database
+        deleteProduct: async (_, { id }, { prisma }) => {
           try {
-            // Finding the product by ID in the database
-            const existingProduct = await prisma.product.findUnique({
-              where: { id: productId },
+            // Perform deletion
+            const deletedProductId = await prisma.product.delete({
+              where: { id: parseInt(id) }
             });
-    
-            if (!existingProduct) {
-              throw new Error('Product not found');
-            }
-    
-            // Deleting the product
-            await prisma.product.delete({
-              where: { id: productId },
-            });
-    
-            return `Product with ID ${productId} deleted successfully`;
+
+            return { id: deletedProductId };// Return the deleted product's ID
           } catch (error) {
             console.error('Error deleting product:', error);
-            throw new Error('Failed to delete product');
+            return null; // Deletion failed
           }
         },
         
-        
-      },
+    },
        
-  };
+};
 
   export default {
     typeDefs,
